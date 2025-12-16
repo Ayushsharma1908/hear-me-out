@@ -1,12 +1,56 @@
-# React + Vite
+# Hear Me Out 🤖💬
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Hear Me Out is a full-stack AI chatbot web application that allows users to have meaningful, real-time conversations with an AI assistant. The project is built with a modern React frontend and a Node.js + Express backend, following clean architecture and best practices.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## Expanding the ESLint configuration
+- 💬 ChatGPT-style real-time chat interface  
+- 🧠 AI-powered responses (OpenAI integration)  
+- 🗂️ Chat history stored in MongoDB  
+- 📱 Fully responsive UI  
+- 🔐 Secure environment variable handling  
+- ⚡ Fast development using Vite  
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- React (Vite)
+- Tailwind CSS
+- JavaScript (ES6+)
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB + Mongoose
+- OpenAI API
+- dotenv
+
+---
+
+## 📁 Project Structure
+
+hear-me-out/
+│
+├── client/
+│ ├── src/
+│ ├── public/
+│ ├── .gitignore
+│ └── package.json
+│
+├── server/
+│ ├── src/
+│ │ ├── controllers/
+│ │ ├── routes/
+│ │ ├── models/
+│ │ ├── services/
+│ │ └── server.js
+│ ├── .gitignore
+│ └── package.json
+│
+├── .gitignore
+├── README.md
+└── eslint.config.js
