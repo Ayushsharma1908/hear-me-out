@@ -10,43 +10,52 @@ export default function HomePage() {
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState([]);
   const [chatId, setChatId] = useState(null);
+
   const handleSubmit = async () => {
-  if (!query.trim()) return;
+    if (!query.trim()) return;
 
-  const userMessage = { role: "user", text: query };
-  setMessages((prev) => [...prev, userMessage]);
-  setQuery("");
+    // User message
+    const userMessage = { role: "user", text: query };
+    setMessages((prev) => [...prev, userMessage]);
+    setQuery("");
 
-  try {
-    const res = await fetch("http://localhost:5000/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ message: query, chatId })
-    });
+    try {
+      const res = await fetch("http://localhost:5000/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: query }), // ✅ FIX HERE
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    // AI response
-    const botMessage = { role: "bot", text: data.reply };
-    setMessages((prev) => [...prev, botMessage]);
-  } catch (error) {
-    console.error("Error connecting to backend:", error);
-    const botMessage = { role: "bot", text: "Oops! Something went wrong." };
-    setMessages((prev) => [...prev, botMessage]);
-  }
-};
-
+      // Bot message
+      const botMessage = { role: "bot", text: data.reply };
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Error connecting to backend:", error);
+      const botMessage = {
+        role: "bot",
+        text: "Oops! Something went wrong.",
+      };
+      setMessages((prev) => [...prev, botMessage]);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-white">
       {showSidebar && <Sidebar setShowSidebar={setShowSidebar} />}
 
       <main className="flex-1 flex flex-col relative">
-        <div className={`sticky top-0 z-10 bg-white border-b border-gray-200 py-4 ${
-          showSidebar ? 'px-4 sm:px-8 md:px-16' : 'px-2 sm:px-4 md:px-6'
-        }`}>
+        {/* Header */}
+        <div
+          className={`sticky top-0 z-10 bg-white border-b border-gray-200 py-4 ${
+            showSidebar
+              ? "px-4 sm:px-8 md:px-16"
+              : "px-2 sm:px-4 md:px-6"
+          }`}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {!showSidebar && (
@@ -57,7 +66,11 @@ export default function HomePage() {
                   <img src={SidebarIcon} alt="Menu" className="w-6 h-6" />
                 </button>
               )}
-              <img src={HearMeOutLogo} alt="Hear Me Out Logo" className="h-8" />
+              <img
+                src={HearMeOutLogo}
+                alt="Hear Me Out Logo"
+                className="h-8"
+              />
             </div>
 
             <img
@@ -67,14 +80,17 @@ export default function HomePage() {
             />
           </div>
         </div>
-        {/* Main content area */}
+
+        {/* Chat Area */}
         <div className="flex-1 overflow-hidden flex flex-col">
           {messages.length === 0 ? (
             <div className="flex-1 flex flex-col justify-center items-center text-center px-4">
               <h2 className="text-2xl font-bold bg-gradient-to-tr from-[#3B3B3B] to-[#EEEEEE] bg-clip-text text-transparent">
                 Hello, Ayush
               </h2>
-              <p className="text-gray-400 mt-1">What's on your mind today?</p>
+              <p className="text-gray-400 mt-1">
+                What's on your mind today?
+              </p>
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto py-6 px-4 sm:px-8 md:px-16">
@@ -95,7 +111,8 @@ export default function HomePage() {
             </div>
           )}
         </div>
-        {/* Chat Input without top border */}
+
+        {/* Input */}
         <div className="sticky bottom-0 bg-white py-4 px-4 sm:px-8 md:px-16">
           <div className="max-w-2xl mx-auto">
             <ChatInput

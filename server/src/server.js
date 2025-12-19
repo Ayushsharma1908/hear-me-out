@@ -3,6 +3,7 @@ dotenv.config();
 
 import app from "./app.js";
 import mongoose from "mongoose";
+console.log("GEMINI KEY:", process.env.GEMINI_API_KEY?.slice(0, 5));
 
 const PORT = process.env.PORT || 5000;
 

@@ -1,34 +1,15 @@
-import Chat from "../models/Chat.js";
-import { generateAIResponse } from "../services/openaiService.js";
+// server/src/controllers/chat.controller.js
+import { generateAIResponse } from "../services/geminiService.js";
 
 export const sendMessage = async (req, res) => {
   try {
-    const { message, chatId } = req.body;
+    const { message } = req.body;
 
-    if (!message) return res.status(400).json({ error: "Message is required" });
+    const reply = await generateAIResponse(message);
 
-    let chat;
-
-    if (chatId) {
-      chat = await Chat.findById(chatId);
-      if (!chat) return res.status(404).json({ error: "Chat not found" });
-    } else {
-      chat = await Chat.create({ messages: [] });
-    }
-
-    chat.messages.push({ role: "user", content: message });
-
-    const aiReply = await generateAIResponse(chat.messages);
-
-    chat.messages.push({ role: "assistant", content: aiReply });
-    await chat.save();
-
-    res.status(200).json({
-      chatId: chat._id,
-      reply: aiReply
-    });
+    res.json({ reply });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "AI failed to respond" });
   }
 };
