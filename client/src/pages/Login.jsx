@@ -29,9 +29,10 @@ export default function Login() {
   };
 
   const handleGoogleLogin = () => {
-    // TODO: Implement Google auth
-    console.log('Login with Google');
-  };
+  // Redirect to backend Google OAuth
+  window.location.href = "http://localhost:5000/auth/google";
+};
+
 
   return (
     <div className="min-h-screen bg-white flex">

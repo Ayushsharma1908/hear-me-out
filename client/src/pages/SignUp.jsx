@@ -44,10 +44,11 @@ export default function SignUp() {
     }
   };
 
-  const handleGoogleSignUp = () => {
-    // TODO: Implement Google auth
-    console.log('Sign up with Google');
-  };
+  const handleGoogleLogin = () => {
+  // Redirect to backend Google OAuth
+  window.location.href = "http://localhost:5000/auth/google";
+};
+
 
   return (
     <div className="min-h-screen bg-white flex">
