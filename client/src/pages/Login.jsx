@@ -3,6 +3,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { Link, useNavigate } from 'react-router-dom';
 import HearMeOutLogo from '../assets/Hear_meOUT.svg';
 import NerdIllustration from '../assets/nerd-illustration.svg';
+import { API_BASE_URL } from '../config/api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -14,25 +15,41 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
-      // TODO: Replace with actual auth logic
-      console.log('Logging in with:', { email, password });
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      navigate('/home'); // Redirect on success
+      const res = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        // If response is not JSON, it might be an HTML error page
+        throw new Error("Server error. Please try again later.");
+      }
+
+      if (!res.ok) {
+        throw new Error(data.message || data.error || "Login failed");
+      }
+
+      navigate("/home");
     } catch (err) {
-      setError(err.message || 'Login failed. Please try again.');
+      setError(err.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleLogin = () => {
-  // Redirect to backend Google OAuth
-  window.location.href = "http://localhost:5000/auth/google";
+const handleGoogleLogin = () => {
+  window.location.href = `${API_BASE_URL}/auth/google`;
 };
-
 
   return (
     <div className="min-h-screen bg-white flex">

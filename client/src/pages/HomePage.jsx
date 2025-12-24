@@ -6,6 +6,21 @@ import SidebarIcon from "../assets/sidebar-icon.svg";
 import NewChatIcon from "../assets/newchat-icon.svg";
 import HearMeOutLogo from "../assets/Hear_meOUT.svg";
 import { API_BASE_URL } from "../config/api.js";
+import ReactMarkdown from "react-markdown";
+
+// Helper function to generate default avatar URL based on name
+const getDefaultAvatar = (name) => {
+  if (!name) return "https://ui-avatars.com/api/?name=User&background=000000&color=ffffff&size=128&bold=true";
+  
+  const initials = name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+  
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=000000&color=ffffff&size=128&bold=true`;
+};
 
 export default function HomePage() {
   const [showSidebar, setShowSidebar] = useState(true);
@@ -125,7 +140,7 @@ export default function HomePage() {
                 className="focus:outline-none"
               >
                 <img
-                  src={user?.avatar || "https://via.placeholder.com/40"}
+                  src={user?.picture || user?.avatar || getDefaultAvatar(user?.name)}
                   alt="Profile"
                   className="w-10 h-10 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-gray-300 transition-all"
                 />
@@ -168,7 +183,7 @@ export default function HomePage() {
                         : "bg-gray-100 text-gray-800 self-start mr-auto"
                       }`}
                   >
-                    {msg.text}
+                    <ReactMarkdown>{msg.text}</ReactMarkdown>
                   </div>
                 ))}
               </div>

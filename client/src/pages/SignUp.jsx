@@ -3,6 +3,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { Link, useNavigate } from 'react-router-dom';
 import HearMeOutLogo from '../assets/Hear_meOUT.svg';
 import BannerIllustration from '../assets/banner.svg';
+import { API_BASE_URL } from '../config/api';
 
 export default function SignUp() {
   const [name, setName] = useState('');
@@ -33,10 +34,22 @@ export default function SignUp() {
     }
     
     try {
-      // TODO: Replace with actual auth logic
-      console.log('Signing up with:', { name, email, password });
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      navigate('/home'); // Redirect on success
+      const res = await fetch(`${API_BASE_URL}/auth/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Sign up failed");
+      }
+
+      navigate("/home");
     } catch (err) {
       setError(err.message || 'Sign up failed. Please try again.');
     } finally {
@@ -44,10 +57,10 @@ export default function SignUp() {
     }
   };
 
-  const handleGoogleLogin = () => {
-  // Redirect to backend Google OAuth
-  window.location.href = "http://localhost:5000/auth/google";
-};
+  const handleGoogleSignUp = () => {
+    // Redirect to backend Google OAuth
+    window.location.href = `${API_BASE_URL}/auth/google`;
+  };
 
 
   return (
