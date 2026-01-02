@@ -7,24 +7,7 @@ import HearMeOutLogo from "../assets/Hear_meOUT.svg";
 import { API_BASE_URL } from "../config/api.js";
 import ReactMarkdown from "react-markdown";
 
-function TypingMarkdown({ text, components }) {
-  const [displayedText, setDisplayedText] = useState("");
-
-  useEffect(() => {
-    let i = 0;
-    setDisplayedText("");
-
-    const interval = setInterval(() => {
-      setDisplayedText((prev) => prev + text.charAt(i));
-      i++;
-      if (i >= text.length) clearInterval(interval);
-    }, 8);
-
-    return () => clearInterval(interval);
-  }, [text]);
-
-  return <ReactMarkdown components={components}>{displayedText}</ReactMarkdown>;
-}
+// ... keep your TypingMarkdown component as is ...
 
 export default function HomePage() {
   const [showSidebar, setShowSidebar] = useState(true);
@@ -34,6 +17,7 @@ export default function HomePage() {
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeChatId, setActiveChatId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(""); // Keep this state
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -48,14 +32,15 @@ export default function HomePage() {
       .catch(() => navigate("/login"));
   }, [navigate]);
 
-  /* -------------------- FETCH RECENTS (FIXED) -------------------- */
-  const fetchRecentChats = async () => {
+  /* -------------------- FETCH RECENT CHATS -------------------- */
+  const fetchRecentChats = async (search = "") => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/chat/recent`, {
+      const res = await fetch(`${API_BASE_URL}/api/chat/recent?search=${encodeURIComponent(search)}`, {
         credentials: "include",
       });
       const data = await res.json();
-      if (data.recentChats) setRecentChats(data.recentChats);
+      console.log("Recent chats response:", data);
+      if (data.chats) setRecentChats(data.chats);
     } catch (err) {
       console.error("Failed to fetch recent chats", err);
     }
@@ -65,6 +50,12 @@ export default function HomePage() {
     fetchRecentChats();
   }, []);
 
+  /* -------------------- HANDLE SEARCH CHANGE -------------------- */
+  const handleSearchChange = (searchValue) => {
+    setSearchQuery(searchValue);
+    fetchRecentChats(searchValue);
+  };
+
   /* -------------------- LOAD CHAT -------------------- */
   const loadChat = async (chatId) => {
     try {
@@ -72,9 +63,10 @@ export default function HomePage() {
         credentials: "include",
       });
       const data = await res.json();
-      if (data.chat) 
-      setMessages(data.chat.messages);
-      setActiveChatId(chatId); 
+      if (data.chat) {
+        setMessages(data.chat.messages);
+        setActiveChatId(chatId);
+      }
     } catch (err) {
       console.error("Failed to load chat", err);
     }
@@ -82,78 +74,84 @@ export default function HomePage() {
 
   /* -------------------- NEW CHAT -------------------- */
   const handleNewChat = () => {
-  setMessages([]);
-  setActiveChatId(null); // 🔥 reset chat session
-};
+    setMessages([]);
+    setActiveChatId(null);
+    setQuery("");
+  };
 
-const handleDeleteChat = async (chatId) => {
-  try {
-    await fetch(`${API_BASE_URL}/api/chat/${chatId}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
+  /* -------------------- DELETE CHAT -------------------- */
+  const handleDeleteChat = async (chatId) => {
+    try {
+      await fetch(`${API_BASE_URL}/api/chat/${chatId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
-    // remove from UI immediately
-    setRecentChats((prev) => prev.filter((c) => c._id !== chatId));
+      // Remove from UI
+      setRecentChats((prev) => prev.filter((chat) => chat._id !== chatId));
 
-    // if deleted chat is open, reset
-    if (activeChatId === chatId) {
-      setMessages([]);
-      setActiveChatId(null);
+      // Clear screen if deleted chat is open
+      if (activeChatId === chatId) {
+        setMessages([]);
+        setActiveChatId(null);
+      }
+    } catch (err) {
+      console.error("Delete failed", err);
     }
-  } catch (err) {
-    console.error("Failed to delete chat", err);
-  }
-};
-
+  };
 
   /* -------------------- SEND MESSAGE -------------------- */
-const handleSubmit = async () => {
-  if (!query.trim()) return;
+  const handleSubmit = async () => {
+    if (!query.trim()) return;
 
-  const userMessage = { role: "user", text: query };
-  setMessages((prev) => [...prev, userMessage]);
-  setQuery("");
+    const userMessage = { role: "user", text: query };
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+    setQuery("");
 
-  try {
-    // 1️⃣ SEND TO AI
-    const res = await fetch(`${API_BASE_URL}/api/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ message: query }),
-    });
+    try {
+      // 1️⃣ SEND TO AI
+      const res = await fetch(`${API_BASE_URL}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ message: query }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    const botMessage = { role: "bot", text: data.reply };
-    setMessages((prev) => [...prev, botMessage]);
+      const botMessage = { role: "bot", text: data.response || data.reply };
+      const finalMessages = [...updatedMessages, botMessage];
+      setMessages(finalMessages);
 
-    // 2️⃣ SAVE OR UPDATE CHAT (ONLY ONCE)
-    const saveRes = await fetch(`${API_BASE_URL}/api/chat/save`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        chatId: activeChatId, // 👈 null for first time
-        messages: [...messages, userMessage, botMessage],
-      }),
-    });
+      // 2️⃣ SAVE OR UPDATE CHAT
+      const saveRes = await fetch(`${API_BASE_URL}/api/chat/save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          chatId: activeChatId,
+          messages: finalMessages,
+        }),
+      });
 
-    const saveData = await saveRes.json();
+      const saveData = await saveRes.json();
 
-    // 3️⃣ STORE CHAT ID ONLY ONCE
-    if (!activeChatId && saveData.chatId) {
-      setActiveChatId(saveData.chatId);
-      fetchRecentChats();
+      // 3️⃣ STORE CHAT ID IF NEW CHAT
+      if (!activeChatId && saveData.chat && saveData.chat._id) {
+        setActiveChatId(saveData.chat._id);
+      }
+
+      // 4️⃣ REFRESH RECENT CHATS
+      fetchRecentChats(searchQuery);
+
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: "bot", text: "Sorry, something went wrong." },
+      ]);
     }
-  } catch {
-    setMessages((prev) => [
-      ...prev,
-      { role: "bot", text: "Sorry, something went wrong." },
-    ]);
-  }
-};
+  };
 
   /* -------------------- LOGOUT -------------------- */
   const handleLogout = async () => {
@@ -173,7 +171,9 @@ const handleSubmit = async () => {
           onNewChat={handleNewChat}
           recentChats={recentChats}
           onSelectChat={loadChat}
-          onDeleteChat={handleDeleteChat} 
+          onDeleteChat={handleDeleteChat}
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange} // ADD THIS
         />
       )}
 
@@ -193,6 +193,7 @@ const handleSubmit = async () => {
                   <img src={SidebarIcon} alt="Menu" className="w-6 h-6" />
                 </button>
               )}
+              {/* REMOVED search from here - now only logo */}
               <img src={HearMeOutLogo} alt="Hear Me Out Logo" className="h-8" />
             </div>
 
@@ -203,8 +204,8 @@ const handleSubmit = async () => {
               >
                 <img
                   src={
-                    user?.picture ||
                     user?.avatar ||
+                    user?.picture ||
                     "https://via.placeholder.com/40"
                   }
                   alt="Profile"
@@ -233,6 +234,7 @@ const handleSubmit = async () => {
             </div>
           </div>
         </div>
+
         {/* Main content area */}
         <div className="flex-1 overflow-hidden flex flex-col">
           {messages.length === 0 ? (
@@ -254,116 +256,14 @@ const handleSubmit = async () => {
                         : "bg-gray-100 text-gray-800 self-start mr-auto"
                     }`}
                   >
-                    {msg.role === "bot" ? (
-                      <TypingMarkdown
-                        text={msg.text}
-                        components={{
-                          h1: ({ node, ...props }) => (
-                            <h1
-                              className="text-xl font-semibold mt-4 mb-2"
-                              {...props}
-                            />
-                          ),
-                          h2: ({ node, ...props }) => (
-                            <h2
-                              className="text-lg font-semibold mt-4 mb-2"
-                              {...props}
-                            />
-                          ),
-                          h3: ({ node, ...props }) => (
-                            <h3
-                              className="text-base font-semibold mt-3 mb-1"
-                              {...props}
-                            />
-                          ),
-                          p: ({ node, ...props }) => (
-                            <p
-                              className="leading-relaxed mb-3 text-sm"
-                              {...props}
-                            />
-                          ),
-                          ul: ({ node, ...props }) => (
-                            <ul
-                              className="list-disc pl-5 space-y-2 mb-3"
-                              {...props}
-                            />
-                          ),
-                          ol: ({ node, ...props }) => (
-                            <ol
-                              className="list-decimal pl-5 space-y-2 mb-3"
-                              {...props}
-                            />
-                          ),
-                          li: ({ node, ...props }) => (
-                            <li
-                              className="text-sm leading-relaxed"
-                              {...props}
-                            />
-                          ),
-                          strong: ({ node, ...props }) => (
-                            <strong className="font-semibold" {...props} />
-                          ),
-                        }}
-                      />
-                    ) : (
-                      <ReactMarkdown
-                        components={{
-                          h1: ({ node, ...props }) => (
-                            <h1
-                              className="text-xl font-semibold mt-4 mb-2"
-                              {...props}
-                            />
-                          ),
-                          h2: ({ node, ...props }) => (
-                            <h2
-                              className="text-lg font-semibold mt-4 mb-2"
-                              {...props}
-                            />
-                          ),
-                          h3: ({ node, ...props }) => (
-                            <h3
-                              className="text-base font-semibold mt-3 mb-1"
-                              {...props}
-                            />
-                          ),
-                          p: ({ node, ...props }) => (
-                            <p
-                              className="leading-relaxed mb-3 text-sm"
-                              {...props}
-                            />
-                          ),
-                          ul: ({ node, ...props }) => (
-                            <ul
-                              className="list-disc pl-5 space-y-2 mb-3"
-                              {...props}
-                            />
-                          ),
-                          ol: ({ node, ...props }) => (
-                            <ol
-                              className="list-decimal pl-5 space-y-2 mb-3"
-                              {...props}
-                            />
-                          ),
-                          li: ({ node, ...props }) => (
-                            <li
-                              className="text-sm leading-relaxed"
-                              {...props}
-                            />
-                          ),
-                          strong: ({ node, ...props }) => (
-                            <strong className="font-semibold" {...props} />
-                          ),
-                        }}
-                      >
-                        {msg.text}
-                      </ReactMarkdown>
-                    )}
+                    {/* ... keep your message rendering code as is ... */}
                   </div>
                 ))}
               </div>
             </div>
           )}
         </div>
+
         {/* Chat Input without top border */}
         <div className="sticky bottom-0 bg-white py-4 px-4 sm:px-8 md:px-16">
           <div className="max-w-2xl mx-auto">
