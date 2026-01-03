@@ -302,7 +302,7 @@ export default function HomePage() {
                   <div
                     ref={bottomRef}
                     key={index}
-                    className={`p-3 rounded-xl max-w-[80%] whitespace-pre-wrap ${
+                    className={`p-4 rounded-xl max-w-[80%] whitespace-pre-wrap break-words ${
                       msg.role === "user"
                         ? "bg-black text-white ml-auto"
                         : "bg-gray-100 text-gray-800 mr-auto"
@@ -311,41 +311,51 @@ export default function HomePage() {
                     <ReactMarkdown
                       components={{
                         h1: ({ children }) => (
-                          <>
-                            <h1 className="text-lg font-semibold mt-4 mb-2">
-                              {children}
-                            </h1>
-                            <hr className="border-gray-300 mb-3" />
-                          </>
+                          <div className="mt-4 mb-2">
+                            <h1 className="text-lg font-bold">{children}</h1>
+                            <hr className="border-gray-300 my-2" />
+                          </div>
                         ),
                         h2: ({ children }) => (
-                          <>
-                            <h2 className="text-base font-semibold mt-4 mb-2">
+                          <div className="mt-3 mb-1">
+                            <h2 className="text-base font-semibold">
                               {children}
                             </h2>
-                            <hr className="border-gray-200 mb-3" />
-                          </>
+                            <hr className="border-gray-200 my-1" />
+                          </div>
                         ),
                         h3: ({ children }) => (
-                          <>
-                            <h3 className="text-sm font-semibold mt-3 mb-1">
+                          <div className="mt-2 mb-1">
+                            <h3 className="text-sm font-semibold">
                               {children}
                             </h3>
-                            <hr className="border-gray-100 mb-2" />
-                          </>
+                            <hr className="border-gray-100 my-1" />
+                          </div>
                         ),
                         p: ({ children }) => (
-                          <p className="leading-relaxed mb-3 text-sm">
+                          <p className="leading-relaxed mb-2 text-sm">
                             {children}
                           </p>
                         ),
                         ul: ({ children }) => (
-                          <ul className="list-disc ml-5 mb-3 space-y-1">
+                          <ul className="list-disc ml-5 mb-2 space-y-1">
                             {children}
                           </ul>
                         ),
                         li: ({ children }) => (
-                          <li className="text-sm">{children}</li>
+                          <li className="text-sm leading-relaxed">
+                            {children}
+                          </li>
+                        ),
+                        code: ({ children }) => (
+                          <code className="bg-gray-200 text-sm px-1 py-0.5 rounded">
+                            {children}
+                          </code>
+                        ),
+                        blockquote: ({ children }) => (
+                          <blockquote className="border-l-2 border-gray-300 pl-4 italic my-2 text-gray-600">
+                            {children}
+                          </blockquote>
                         ),
                       }}
                     >
