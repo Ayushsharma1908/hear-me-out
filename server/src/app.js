@@ -1,14 +1,16 @@
+// app.js - FIXED VERSION
 import express from "express";
 import cors from "cors";
 import session from "express-session";
+import MongoStore from "connect-mongo";
+import mongoose from "mongoose";
 import passport from "./passport.js";
-
 import chatRoutes from "./routes/chat.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
-// middleware
+// Middleware
 app.use(cors({
   origin: "http://localhost:5173",
   credentials: true,
@@ -16,20 +18,55 @@ app.use(cors({
 
 app.use(express.json());
 
-// session + passport
+// Session + Passport - FIXED WITH MONGOSTORE
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "dev_secret",
+    secret: process.env.SESSION_SECRET || "dev_secret_change_this",
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      collectionName: "sessions",
+      ttl: 14 * 24 * 60 * 60, // 14 days
+    }),
+    cookie: {
+      maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
+      httpOnly: true,
+      secure: false, // Set to true in production with HTTPS
+      sameSite: "lax",
+    },
   })
 );
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-// routes
+// Debug middleware to see what's happening
+app.use((req, res, next) => {
+  console.log("🔍 Request Info:");
+  console.log("   - URL:", req.originalUrl);
+  console.log("   - Session ID:", req.sessionID);
+  console.log("   - isAuthenticated:", req.isAuthenticated ? req.isAuthenticated() : false);
+  console.log("   - User:", req.user ? { id: req.user._id, email: req.user.email } : "No user");
+  next();
+});
+
+// Routes
 app.use("/api/chat", chatRoutes);
 app.use("/auth", authRoutes);
+
+// Debug route
+app.get("/api/debug/auth", (req, res) => {
+  res.json({
+    sessionID: req.sessionID,
+    isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false,
+    user: req.user ? { 
+      id: req.user._id, 
+      email: req.user.email,
+      name: req.user.name 
+    } : null,
+    hasSession: !!req.session,
+  });
+});
 
 export default app;
