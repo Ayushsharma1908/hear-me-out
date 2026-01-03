@@ -20,6 +20,11 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState(""); // Keep this state
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   /* -------------------- AUTH -------------------- */
   useEffect(() => {
@@ -35,9 +40,12 @@ export default function HomePage() {
   /* -------------------- FETCH RECENT CHATS -------------------- */
   const fetchRecentChats = async (search = "") => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/chat/recent?search=${encodeURIComponent(search)}`, {
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/api/chat/recent?search=${encodeURIComponent(search)}`,
+        {
+          credentials: "include",
+        }
+      );
       const data = await res.json();
       console.log("Recent chats response:", data);
       if (data.chats) setRecentChats(data.chats);
@@ -58,12 +66,18 @@ export default function HomePage() {
 
   /* -------------------- LOAD CHAT -------------------- */
   const loadChat = async (chatId) => {
+    console.log("👉 loadChat called with:", chatId);
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/chat/${chatId}`, {
         credentials: "include",
       });
+
       const data = await res.json();
-      if (data.chat) {
+      console.log("👉 loadChat response:", data);
+
+      if (data.chat && data.chat.messages) {
+        console.log("👉 messages received:", data.chat.messages);
         setMessages(data.chat.messages);
         setActiveChatId(chatId);
       }
@@ -100,6 +114,29 @@ export default function HomePage() {
     }
   };
 
+  const typeAssistantMessage = (fullText) => {
+    let index = 0;
+    let currentText = "";
+
+    const typingInterval = setInterval(() => {
+      currentText += fullText[index];
+      index++;
+
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1] = {
+          role: "assistant",
+          text: currentText,
+        };
+        return updated;
+      });
+
+      if (index >= fullText.length) {
+        clearInterval(typingInterval);
+      }
+    }, 15); // speed (lower = faster)
+  };
+
   /* -------------------- SEND MESSAGE -------------------- */
   const handleSubmit = async () => {
     if (!query.trim()) return;
@@ -120,11 +157,20 @@ export default function HomePage() {
 
       const data = await res.json();
 
-      const botMessage = { role: "bot", text: data.response || data.reply };
-      const finalMessages = [...updatedMessages, botMessage];
-      setMessages(finalMessages);
+      const botText = data.response || data.reply;
+
+      // add empty assistant bubble first
+      setMessages((prev) => [...prev, { role: "assistant", text: "" }]);
+
+      // type it
+      typeAssistantMessage(botText);
 
       // 2️⃣ SAVE OR UPDATE CHAT
+      const finalMessages = [
+        ...updatedMessages,
+        { role: "assistant", text: botText },
+      ];
+
       const saveRes = await fetch(`${API_BASE_URL}/api/chat/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -134,6 +180,10 @@ export default function HomePage() {
           messages: finalMessages,
         }),
       });
+      if (!saveRes.ok) {
+        console.error("Save failed:", saveData);
+        return;
+      }
 
       const saveData = await saveRes.json();
 
@@ -144,7 +194,6 @@ export default function HomePage() {
 
       // 4️⃣ REFRESH RECENT CHATS
       fetchRecentChats(searchQuery);
-
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -247,16 +296,61 @@ export default function HomePage() {
           ) : (
             <div className="flex-1 overflow-y-auto py-6 px-4 sm:px-8 md:px-16">
               <div className="max-w-2xl mx-auto space-y-4">
+                {console.log("🟢 messages state:", messages)}
+
                 {messages.map((msg, index) => (
                   <div
+                    ref={bottomRef}
                     key={index}
-                    className={`p-3 rounded-xl max-w-[80%] ${
+                    className={`p-3 rounded-xl max-w-[80%] whitespace-pre-wrap ${
                       msg.role === "user"
-                        ? "bg-black text-white self-end ml-auto"
-                        : "bg-gray-100 text-gray-800 self-start mr-auto"
+                        ? "bg-black text-white ml-auto"
+                        : "bg-gray-100 text-gray-800 mr-auto"
                     }`}
                   >
-                    {/* ... keep your message rendering code as is ... */}
+                    <ReactMarkdown
+                      components={{
+                        h1: ({ children }) => (
+                          <>
+                            <h1 className="text-lg font-semibold mt-4 mb-2">
+                              {children}
+                            </h1>
+                            <hr className="border-gray-300 mb-3" />
+                          </>
+                        ),
+                        h2: ({ children }) => (
+                          <>
+                            <h2 className="text-base font-semibold mt-4 mb-2">
+                              {children}
+                            </h2>
+                            <hr className="border-gray-200 mb-3" />
+                          </>
+                        ),
+                        h3: ({ children }) => (
+                          <>
+                            <h3 className="text-sm font-semibold mt-3 mb-1">
+                              {children}
+                            </h3>
+                            <hr className="border-gray-100 mb-2" />
+                          </>
+                        ),
+                        p: ({ children }) => (
+                          <p className="leading-relaxed mb-3 text-sm">
+                            {children}
+                          </p>
+                        ),
+                        ul: ({ children }) => (
+                          <ul className="list-disc ml-5 mb-3 space-y-1">
+                            {children}
+                          </ul>
+                        ),
+                        li: ({ children }) => (
+                          <li className="text-sm">{children}</li>
+                        ),
+                      }}
+                    >
+                      {msg.text}
+                    </ReactMarkdown>
                   </div>
                 ))}
               </div>
