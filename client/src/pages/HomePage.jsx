@@ -26,58 +26,26 @@ export default function HomePage() {
   }, [messages]);
 
   /* -------------------- AUTH -------------------- */
- /* -------------------- AUTH -------------------- */
-useEffect(() => {
+ useEffect(() => {
   const fetchUser = async () => {
     try {
-      console.log('🔄 Fetching user from:', `${API_BASE_URL}/auth/me`);
-      
-      // First test if cookies are working
-      const cookieTest = await fetch(`${API_BASE_URL}/api/cookie-test`, {
-        credentials: 'include'
-      });
-      const cookieData = await cookieTest.json();
-      console.log('🍪 Cookie test result:', cookieData);
-      
-      // Check session status
-      const sessionRes = await fetch(`${API_BASE_URL}/api/session-status`, {
-        credentials: 'include'
-      });
-      const sessionData = await sessionRes.json();
-      console.log('🔐 Session status:', sessionData);
-      
-      // Now fetch user
-      const res = await fetch(`${API_BASE_URL}/auth/me`, { 
+      const res = await fetch(`${API_BASE_URL}/auth/me`, {
         credentials: 'include',
-        headers: {
-          'Cache-Control': 'no-cache'
-        }
       });
-      
-      console.log('🔑 Auth/me response status:', res.status);
-      console.log('🔑 Auth/me response headers:', [...res.headers.entries()]);
-      
+
       if (!res.ok) {
-        const errorText = await res.text();
-        console.error('❌ Auth failed:', errorText);
-        throw new Error(`Not authenticated: ${res.status}`);
+        throw new Error("Not authenticated");
       }
-      
+
       const data = await res.json();
-      console.log('✅ User fetched:', data.user);
       setUser(data.user);
-      
     } catch (err) {
-      console.error('🚨 Auth error details:', err);
-      console.log('Redirecting to login...');
-      navigate('/login');
+      console.log("Auth failed, redirecting...");
+      navigate('/login', { replace: true });
     }
   };
-  
-  // Add a small delay to ensure session is established after redirect
-  setTimeout(() => {
-    fetchUser();
-  }, 100);
+
+  fetchUser();
 }, [navigate]);
 
 
