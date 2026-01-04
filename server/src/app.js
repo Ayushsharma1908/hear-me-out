@@ -33,23 +33,27 @@ app.use(
       process.env.NODE_ENV === "production"
         ? "__Secure-connect.sid"
         : "connect.sid",
-    secret: process.env.SESSION_SECRET || "dev_secret_change_this",
+
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URI,
       collectionName: "sessions",
-      ttl: 14 * 24 * 60 * 60, // 14 days
+      ttl: 14 * 24 * 60 * 60,
     }),
+
     cookie: {
-      proxy: true,
-      maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
+      maxAge: 14 * 24 * 60 * 60 * 1000,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Set to true in production with HTTPS
+      secure: process.env.NODE_ENV === "production", // MUST be true in prod
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     },
   })
 );
+
+
 
 app.use(passport.initialize());
 app.use(passport.session());
