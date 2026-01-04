@@ -29,6 +29,10 @@ app.use(express.json());
 // Session + Passport - FIXED WITH MONGOSTORE
 app.use(
   session({
+    name:
+      process.env.NODE_ENV === "production"
+        ? "__Secure-connect.sid"
+        : "connect.sid",
     secret: process.env.SESSION_SECRET || "dev_secret_change_this",
     resave: false,
     saveUninitialized: false,
@@ -42,7 +46,7 @@ app.use(
       maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // Set to true in production with HTTPS
-      sameSite: "none",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     },
   })
 );
