@@ -28,14 +28,23 @@ export default function HomePage() {
 
   /* -------------------- AUTH -------------------- */
   useEffect(() => {
-    fetch(`${API_BASE_URL}/auth/me`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.user) setUser(data.user);
-        else navigate("/login");
-      })
-      .catch(() => navigate("/login"));
-  }, [navigate]);
+  fetch(`${API_BASE_URL}/auth/me`, {
+    credentials: "include",
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error("Not authenticated");
+      }
+      return res.json();
+    })
+    .then((data) => {
+      setUser(data.user);
+    })
+    .catch(() => {
+      navigate("/login");
+    });
+}, [navigate]);
+
 
   /* -------------------- FETCH RECENT CHATS -------------------- */
   const fetchRecentChats = async (search = "") => {
