@@ -41,13 +41,14 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
-      maxAge: 14 * 24 * 60 * 60 * 1000,
-      secure: process.env.NODE_ENV === "production", // MUST be true in prod
+      secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      path: "/", // ensure path is root
+      maxAge: 14 * 24 * 60 * 60 * 1000,
+      path: "/",
     },
   })
 );
+
 
 
 
