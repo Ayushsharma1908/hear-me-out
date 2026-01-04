@@ -13,18 +13,17 @@ if (!clientID || !clientSecret) {
   throw new Error("❌ Google OAuth env vars NOT loaded");
 }
 
-const CALLBACK_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://hear-me-out-oa3q.onrender.com/auth/google/callback"
-    : "http://localhost:5000/auth/google/callback";
+const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL;
 
 passport.use(
   new GoogleStrategy(
     {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientID,
+      clientSecret,
       callbackURL: CALLBACK_URL,
+      scope: ["profile", "email"],
     },
+    
     async (accessToken, refreshToken, profile, done) => {
       try {
         const email = profile.emails[0].value;

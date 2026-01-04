@@ -21,10 +21,7 @@ const generateDefaultAvatar = (name) => {
   )}&background=000000&color=ffffff&size=128&bold=true`;
 };
 
-const FRONTEND_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://hear-me-out-red.vercel.app"
-    : "http://localhost:5173";
+const FRONTEND_URL = process.env.FRONTEND_URL;
 
 // Redirect user to Google for login
 router.get(
@@ -33,12 +30,14 @@ router.get(
 );
 
 // Google callback
-router.get("/google/callback", passport.authenticate("google", { failureRedirect: "/login" }),
+router.get(
+  "/google/callback",
+  passport.authenticate("google", { failureRedirect: "/auth/failed" }),
   (req, res) => {
-    // Redirect to frontend after successful login
-    res.redirect("https://hear-me-out-red.vercel.app/home"); 
+    res.redirect(`${FRONTEND_URL}/home`);
   }
 );
+
 
 
 // Signup with email/password
@@ -162,19 +161,18 @@ router.get("/me", (req, res) => {
 
 // Logout
 router.post("/logout", (req, res) => {
-  const cookieName = process.env.NODE_ENV === "production" ? "__Secure-connect.sid" : "connect.sid";
-
   req.logout(() => {
     req.session.destroy(() => {
-      res.clearCookie(cookieName, {
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        secure: process.env.NODE_ENV === "production",
+      res.clearCookie("connect.sid", {
+        sameSite: "none",
+        secure: true,
         path: "/",
       });
       res.json({ message: "Logged out successfully" });
     });
   });
 });
+
 
 
 
