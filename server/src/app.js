@@ -29,7 +29,6 @@ app.use(express.json());
 
 // Session + Passport - FIXED WITH MONGOSTORE
 // app.js - session
-import cookieParser from "cookie-parser";
 
 app.use(cookieParser());
 
