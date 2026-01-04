@@ -26,32 +26,19 @@ export default function HomePage() {
   }, [messages]);
 
   /* -------------------- AUTH -------------------- */
-  useEffect(() => {
-  let attempts = 0;
-
-  const checkAuth = async () => {
+ useEffect(() => {
+  const fetchUser = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/auth/me`, {
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error("Not authenticated");
-
+      const res = await fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Not authenticated');
       const data = await res.json();
       setUser(data.user);
-      return; // ✅ STOP
     } catch (err) {
-      attempts++;
-      if (attempts < 5) {
-        setTimeout(checkAuth, 500); // ⏳ retry
-      } else {
-        navigate("/login"); // ❌ only after retries fail
-      }
+      navigate('/login');
     }
   };
-
-  checkAuth();
-}, [navigate]);
+  fetchUser();
+}, []);
 
 
   /* -------------------- FETCH RECENT CHATS -------------------- */

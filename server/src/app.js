@@ -47,6 +47,7 @@ app.use(
       secure: true,       // ALWAYS true on Render
       sameSite: "none",   // REQUIRED for Vercel ↔ Render
       maxAge: 14 * 24 * 60 * 60 * 1000,
+      domain: ".oa3q.onrender.com",
     },
   })
 );
