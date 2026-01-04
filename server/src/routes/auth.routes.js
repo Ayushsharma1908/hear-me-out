@@ -19,16 +19,21 @@ const generateDefaultAvatar = (name) => {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=000000&color=ffffff&size=128&bold=true`;
 };
 
+const FRONTEND_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://hear-me-out-red.vercel.app"
+    : "http://localhost:5173";
+
 // Redirect user to Google for login
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
 // Google callback
 router.get(
     "/google/callback",
-    passport.authenticate("google", { failureRedirect: "http://localhost:5173/login" }),
+    passport.authenticate("google", { failureRedirect: `${FRONTEND_URL}/login` }),
     (req, res) => {
         // Successful login
-        res.redirect("http://localhost:5173/home"); // redirect to frontend
+        res.redirect(`${FRONTEND_URL}/login`); // redirect to frontend
     }
 );
 
