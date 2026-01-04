@@ -37,7 +37,7 @@ export default function Login() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`;
+    window.location.href = "https://hear-me-out-oa3q.onrender.com/auth/google";
   };
 
   return (
