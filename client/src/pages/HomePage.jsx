@@ -8,7 +8,6 @@ import { API_BASE_URL } from "../config/api.js";
 import ReactMarkdown from "react-markdown";
 
 // ... keep your TypingMarkdown component as is ...
-
 export default function HomePage() {
   const [showSidebar, setShowSidebar] = useState(true);
   const [query, setQuery] = useState("");
@@ -29,7 +28,9 @@ export default function HomePage() {
   /* -------------------- AUTH -------------------- */
   useEffect(() => {
   fetch(`${API_BASE_URL}/auth/me`, {
+    method: "GET",
     credentials: "include",
+    mode: "cors",
   })
     .then((res) => {
       if (!res.ok) {
@@ -44,7 +45,6 @@ export default function HomePage() {
       navigate("/login");
     });
 }, [navigate]);
-
 
   /* -------------------- FETCH RECENT CHATS -------------------- */
   const fetchRecentChats = async (search = "") => {
