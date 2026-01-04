@@ -295,14 +295,14 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto py-6 px-4 sm:px-8 md:px-16">
-              <div className="max-w-2xl mx-auto space-y-4">
+              <div className="max-w-2xl mx-auto space-y-2">
                 {console.log("🟢 messages state:", messages)}
 
                 {messages.map((msg, index) => (
                   <div
                     ref={bottomRef}
                     key={index}
-                    className={`p-4 rounded-xl max-w-[80%] whitespace-pre-wrap break-words ${
+                    className={`px-4 py-2 rounded-xl max-w-[80%] whitespace-pre-wrap break-words ${
                       msg.role === "user"
                         ? "bg-black text-white ml-auto"
                         : "bg-gray-100 text-gray-800 mr-auto"
@@ -311,49 +311,53 @@ export default function HomePage() {
                     <ReactMarkdown
                       components={{
                         h1: ({ children }) => (
-                          <div className="mt-4 mb-2">
-                            <h1 className="text-lg font-bold">{children}</h1>
-                            <hr className="border-gray-300 my-2" />
+                          <div className="mb-0">
+                            <h1 className="text-sm font-semibold leading-tight">
+                              {children}
+                            </h1>
+                            <hr className="border-gray-300 my-1" />
                           </div>
                         ),
+
                         h2: ({ children }) => (
-                          <div className="mt-3 mb-1">
-                            <h2 className="text-base font-semibold">
+                          <div className="mb-0">
+                            <h2 className="text-sm font-medium leading-tight">
                               {children}
                             </h2>
-                            <hr className="border-gray-200 my-1" />
+                            <hr className="border-gray-200 my-0.5" />
                           </div>
                         ),
+
                         h3: ({ children }) => (
-                          <div className="mt-2 mb-1">
-                            <h3 className="text-sm font-semibold">
-                              {children}
-                            </h3>
-                            <hr className="border-gray-100 my-1" />
-                          </div>
+                          <h3 className="text-sm font-medium leading-tight mb-0">
+                            {children}
+                          </h3>
                         ),
+
                         p: ({ children }) => (
-                          <p className="leading-relaxed mb-2 text-sm">
+                          <p className="text-sm leading-snug mb-0.5">
                             {children}
                           </p>
                         ),
+
                         ul: ({ children }) => (
-                          <ul className="list-disc ml-5 mb-2 space-y-1">
+                          <ul className="list-disc ml-4 mb-0.5 mt-0 space-y-0">
                             {children}
                           </ul>
                         ),
+
                         li: ({ children }) => (
-                          <li className="text-sm leading-relaxed">
-                            {children}
-                          </li>
+                          <li className="text-sm leading-snug">{children}</li>
                         ),
+
                         code: ({ children }) => (
-                          <code className="bg-gray-200 text-sm px-1 py-0.5 rounded">
+                          <code className="bg-gray-200 text-xs px-1 rounded">
                             {children}
                           </code>
                         ),
+
                         blockquote: ({ children }) => (
-                          <blockquote className="border-l-2 border-gray-300 pl-4 italic my-2 text-gray-600">
+                          <blockquote className="border-l-2 border-gray-300 pl-3 text-sm italic my-0.5">
                             {children}
                           </blockquote>
                         ),
