@@ -38,10 +38,11 @@ app.use(
       ttl: 14 * 24 * 60 * 60, // 14 days
     }),
     cookie: {
+      proxy: true,
       maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // Set to true in production with HTTPS
-      sameSite: "lax",
+      sameSite: "none",
     },
   })
 );
