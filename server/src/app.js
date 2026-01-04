@@ -30,26 +30,21 @@ app.use(express.json());
 // app.js - session
 app.use(
   session({
-    name: process.env.NODE_ENV === "production" ? "__Secure-connect.sid" : "connect.sid",
-    secret: process.env.SESSION_SECRET || "dev_secret_change_this",
+    name: "connect.sid", // remove __Secure prefix unless needed
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URI,
-      collectionName: "sessions",
-      ttl: 14 * 24 * 60 * 60,
     }),
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production", // true on prod
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 14 * 24 * 60 * 60 * 1000,
-      path: "/",
     },
   })
 );
-
-
 
 
 
@@ -90,7 +85,6 @@ app.get("/api/debug/cookie", (req, res) => {
     user: req.user ? { id: req.user._id, email: req.user.email } : null,
   });
 });
-
 
 
 export default app;

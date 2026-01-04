@@ -33,14 +33,13 @@ router.get(
 );
 
 // Google callback
-router.get(
-  "/google/callback",
-  passport.authenticate("google", { failureRedirect: `${FRONTEND_URL}/login` }),
+router.get("/google/callback", passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
-    // Successful login
-    res.redirect(`${FRONTEND_URL}/home`); // redirect to frontend
+    // Redirect to frontend after successful login
+    res.redirect("https://hear-me-out-red.vercel.app/home"); 
   }
 );
+
 
 // Signup with email/password
 router.post("/signup", async (req, res) => {
