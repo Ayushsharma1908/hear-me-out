@@ -44,6 +44,11 @@ export default function SignUp() {
     }
   };
 
+  const handleGoogleSignup = () => {
+  window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`;
+};
+
+  
   return (
     <div className="min-h-screen bg-white flex">
       {/* Left Form */}
@@ -107,7 +112,7 @@ export default function SignUp() {
             </button>
           </form>
 
-          <button className="w-full flex items-center justify-center gap-3 py-2.5 border border-gray-300 rounded-lg">
+          <button onClick={handleGoogleSignup} className="w-full flex items-center justify-center gap-3 py-2.5 border border-gray-300 rounded-lg">
             <FcGoogle className="text-xl" />
             Sign up with Google
           </button>
