@@ -13,32 +13,54 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
+  e.preventDefault();
+  setIsLoading(true);
+  setError('');
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password }),
+    });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Login failed');
-
-      navigate('/home');
-    } catch (err) {
-      setError(err.message || 'Login failed. Please try again.');
-    } finally {
-      setIsLoading(false);
+    const data = await res.json();
+    console.log('🔑 Login response:', data);
+    console.log('🔑 Login headers:', [...res.headers.entries()]);
+    
+    if (!res.ok) {
+      throw new Error(data.message || 'Login failed');
     }
-  };
+    
+    // Test session immediately after login
+    const sessionTest = await fetch(`${API_BASE_URL}/api/session-status`, {
+      credentials: 'include'
+    });
+    const sessionData = await sessionTest.json();
+    console.log('✅ Session after login:', sessionData);
+    
+    if (sessionData.authenticated) {
+      navigate('/home');
+    } else {
+      throw new Error('Session not created properly');
+    }
+  } catch (err) {
+    setError(err.message || 'Login failed. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleGoogleLogin = () => {
     window.location.href = "https://hear-me-out-oa3q.onrender.com/auth/google";
   };
+
+
+  // In Login.jsx, after successful login:
+setTimeout(() => {
+  navigate('/home');
+}, 300);
 
   return (
     <div className="min-h-screen bg-white flex">

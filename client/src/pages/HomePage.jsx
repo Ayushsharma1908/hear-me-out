@@ -26,19 +26,59 @@ export default function HomePage() {
   }, [messages]);
 
   /* -------------------- AUTH -------------------- */
- useEffect(() => {
+ /* -------------------- AUTH -------------------- */
+useEffect(() => {
   const fetchUser = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Not authenticated');
+      console.log('🔄 Fetching user from:', `${API_BASE_URL}/auth/me`);
+      
+      // First test if cookies are working
+      const cookieTest = await fetch(`${API_BASE_URL}/api/cookie-test`, {
+        credentials: 'include'
+      });
+      const cookieData = await cookieTest.json();
+      console.log('🍪 Cookie test result:', cookieData);
+      
+      // Check session status
+      const sessionRes = await fetch(`${API_BASE_URL}/api/session-status`, {
+        credentials: 'include'
+      });
+      const sessionData = await sessionRes.json();
+      console.log('🔐 Session status:', sessionData);
+      
+      // Now fetch user
+      const res = await fetch(`${API_BASE_URL}/auth/me`, { 
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
+      
+      console.log('🔑 Auth/me response status:', res.status);
+      console.log('🔑 Auth/me response headers:', [...res.headers.entries()]);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('❌ Auth failed:', errorText);
+        throw new Error(`Not authenticated: ${res.status}`);
+      }
+      
       const data = await res.json();
+      console.log('✅ User fetched:', data.user);
       setUser(data.user);
+      
     } catch (err) {
+      console.error('🚨 Auth error details:', err);
+      console.log('Redirecting to login...');
       navigate('/login');
     }
   };
-  fetchUser();
-}, []);
+  
+  // Add a small delay to ensure session is established after redirect
+  setTimeout(() => {
+    fetchUser();
+  }, 100);
+}, [navigate]);
 
 
   /* -------------------- FETCH RECENT CHATS -------------------- */
