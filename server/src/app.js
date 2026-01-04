@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import passport from "./passport.js";
 import chatRoutes from "./routes/chat.routes.js";
 import authRoutes from "./routes/auth.routes.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
@@ -28,23 +29,29 @@ app.use(express.json());
 
 // Session + Passport - FIXED WITH MONGOSTORE
 // app.js - session
+import cookieParser from "cookie-parser";
+
+app.use(cookieParser());
+
 app.use(
   session({
-    name: "connect.sid", // remove __Secure prefix unless needed
+    name: "__Secure-connect.sid", // IMPORTANT
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URI,
     }),
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // true on prod
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: true,       // ALWAYS true on Render
+      sameSite: "none",   // REQUIRED for Vercel ↔ Render
       maxAge: 14 * 24 * 60 * 60 * 1000,
     },
   })
 );
+
 
 
 
