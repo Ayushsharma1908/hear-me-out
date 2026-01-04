@@ -27,31 +27,28 @@ app.use(
 app.use(express.json());
 
 // Session + Passport - FIXED WITH MONGOSTORE
+// app.js - session
 app.use(
   session({
-    name:
-      process.env.NODE_ENV === "production"
-        ? "__Secure-connect.sid"
-        : "connect.sid",
-
-    secret: process.env.SESSION_SECRET,
+    name: process.env.NODE_ENV === "production" ? "__Secure-connect.sid" : "connect.sid",
+    secret: process.env.SESSION_SECRET || "dev_secret_change_this",
     resave: false,
     saveUninitialized: false,
-
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URI,
       collectionName: "sessions",
       ttl: 14 * 24 * 60 * 60,
     }),
-
     cookie: {
-      maxAge: 14 * 24 * 60 * 60 * 1000,
       httpOnly: true,
+      maxAge: 14 * 24 * 60 * 60 * 1000,
       secure: process.env.NODE_ENV === "production", // MUST be true in prod
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/", // ensure path is root
     },
   })
 );
+
 
 
 
@@ -73,17 +70,26 @@ app.use("/api/chat", chatRoutes);
 app.use("/auth", authRoutes);
 
 // Debug route
-app.get("/api/debug/auth", (req, res) => {
+// app.get("/api/debug/auth", (req, res) => {
+//   res.json({
+//     sessionID: req.sessionID,
+//     isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false,
+//     user: req.user ? { 
+//       id: req.user._id, 
+//       email: req.user.email,
+//       name: req.user.name 
+//     } : null,
+//     hasSession: !!req.session,
+//   });
+// });
+app.get("/api/debug/cookie", (req, res) => {
   res.json({
+    cookies: req.cookies,
     sessionID: req.sessionID,
-    isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false,
-    user: req.user ? { 
-      id: req.user._id, 
-      email: req.user.email,
-      name: req.user.name 
-    } : null,
-    hasSession: !!req.session,
+    user: req.user ? { id: req.user._id, email: req.user.email } : null,
   });
 });
+
+
 
 export default app;

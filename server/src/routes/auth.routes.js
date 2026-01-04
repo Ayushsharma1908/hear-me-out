@@ -163,21 +163,20 @@ router.get("/me", (req, res) => {
 
 // Logout
 router.post("/logout", (req, res) => {
-  const cookieName =
-    process.env.NODE_ENV === "production"
-      ? "__Secure-connect.sid"
-      : "connect.sid";
+  const cookieName = process.env.NODE_ENV === "production" ? "__Secure-connect.sid" : "connect.sid";
 
   req.logout(() => {
     req.session.destroy(() => {
       res.clearCookie(cookieName, {
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         secure: process.env.NODE_ENV === "production",
+        path: "/",
       });
       res.json({ message: "Logged out successfully" });
     });
   });
 });
+
 
 
 export default router;
