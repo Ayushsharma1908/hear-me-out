@@ -27,24 +27,32 @@ export default function HomePage() {
 
   /* -------------------- AUTH -------------------- */
   useEffect(() => {
-  fetch(`${API_BASE_URL}/auth/me`, {
-    method: "GET",
-    credentials: "include",
-    mode: "cors",
-  })
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error("Not authenticated");
-      }
-      return res.json();
-    })
-    .then((data) => {
+  let attempts = 0;
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/me`, {
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("Not authenticated");
+
+      const data = await res.json();
       setUser(data.user);
-    })
-    .catch(() => {
-      navigate("/login");
-    });
+      return; // ✅ STOP
+    } catch (err) {
+      attempts++;
+      if (attempts < 5) {
+        setTimeout(checkAuth, 500); // ⏳ retry
+      } else {
+        navigate("/login"); // ❌ only after retries fail
+      }
+    }
+  };
+
+  checkAuth();
 }, [navigate]);
+
 
   /* -------------------- FETCH RECENT CHATS -------------------- */
   const fetchRecentChats = async (search = "") => {
