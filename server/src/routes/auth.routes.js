@@ -34,6 +34,8 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/auth/failed" }),
   (req, res) => {
+    console.log("Session cookie:", req.session);
+    console.log("User:", req.user);
     res.redirect(`${FRONTEND_URL}/home`);
   }
 );
