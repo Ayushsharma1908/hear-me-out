@@ -8,7 +8,7 @@ import ReactMarkdown from "react-markdown";
 import { fetchWithAuth } from "../utils/fetchWithAuth";
 
 export default function HomePage() {
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(false);
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState([]);
   const [recentChats, setRecentChats] = useState([]);
@@ -20,6 +20,8 @@ export default function HomePage() {
   const bottomRef = useRef(null);
   const navigate = useNavigate();
   const [authLoading, setAuthLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -49,6 +51,26 @@ export default function HomePage() {
       isMounted = false;
     };
   }, [navigate]);
+
+  useEffect(() => {
+  const checkScreen = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
+
+  checkScreen();
+  window.addEventListener("resize", checkScreen);
+
+  return () => window.removeEventListener("resize", checkScreen);
+}, []);
+
+useEffect(() => {
+  if (!isMobile) {
+    setShowSidebar(true);   // desktop
+  } else {
+    setShowSidebar(false);  // mobile
+  }
+}, [isMobile]);
+
 
   /* -------------------- FETCH RECENT CHATS -------------------- */
   const fetchRecentChats = async (search = "") => {
