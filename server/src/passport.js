@@ -37,6 +37,7 @@ passport.use(
         // Pass user + token
         done(null, { user, token });
       } catch (err) {
+        console.error("🚨 Google OAuth error:", err); 
         done(err, null);
       }
     }
