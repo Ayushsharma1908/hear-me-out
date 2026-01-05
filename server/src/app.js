@@ -47,31 +47,29 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Session + Passport - FIXED
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = true;
 const isLocalhost = process.env.NODE_ENV === 'development';
 
 app.use(
   session({
-    name: isProduction ? "__Secure-connect.sid" : "connect.sid", // Use appropriate name
+    name: "__Secure-connect.sid",
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     proxy: true,
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URI,
-      ttl: 14 * 24 * 60 * 60, // 14 days in seconds
-      autoRemove: 'native', // Remove expired sessions
+      ttl: 14 * 24 * 60 * 60,
     }),
     cookie: {
       httpOnly: true,
-      secure: isProduction, // true in production, false in development
-      sameSite: isProduction ? "none" : "lax", // 'none' for cross-site in production
-      maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
-      // Do NOT set domain - let the browser handle it
-      // domain: isProduction ? ".onrender.com" : undefined,
+      secure: true,
+      sameSite: "none",
+      maxAge: 14 * 24 * 60 * 60 * 1000,
     },
   })
 );
+
 
 app.use(passport.initialize());
 app.use(passport.session());
