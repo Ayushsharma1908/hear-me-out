@@ -20,12 +20,12 @@ const generateToken = (user) => {
 
 // Google OAuth
 router.get(
-  "/auth/google",
+  "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
 router.get(
-  "/auth/google/callback",
+  "/google/callback",
   passport.authenticate("google", { session: false, failureRedirect: "/login" }),
   (req, res) => {
     // OAuth success → redirect with token
