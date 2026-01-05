@@ -12,7 +12,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
   e.preventDefault();
   setIsLoading(true);
   setError('');
@@ -27,24 +27,14 @@ export default function Login() {
 
     const data = await res.json();
     console.log('🔑 Login response:', data);
-    console.log('🔑 Login headers:', [...res.headers.entries()]);
-    
+
     if (!res.ok) {
       throw new Error(data.message || 'Login failed');
     }
-    
-    // Test session immediately after login
-    const sessionTest = await fetch(`${API_BASE_URL}/api/session-status`, {
-      credentials: 'include'
-    });
-    const sessionData = await sessionTest.json();
-    console.log('✅ Session after login:', sessionData);
-    
-    if (sessionData.authenticated) {
-      navigate('/home');
-    } else {
-      throw new Error('Session not created properly');
-    }
+
+    // ✅ LOGIN SUCCESS → JUST GO TO HOME
+    navigate('/home', { replace: true });
+
   } catch (err) {
     setError(err.message || 'Login failed. Please try again.');
   } finally {
@@ -52,15 +42,11 @@ export default function Login() {
   }
 };
 
+
   const handleGoogleLogin = () => {
     window.location.href = "https://hear-me-out-oa3q.onrender.com/auth/google";
   };
 
-
-  // In Login.jsx, after successful login:
-setTimeout(() => {
-  navigate('/home');
-}, 300);
 
   return (
     <div className="min-h-screen bg-white flex">
