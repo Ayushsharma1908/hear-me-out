@@ -76,7 +76,7 @@ export default function Login() {
               alt="Nerd Illustration"
               className="lg:hidden w-full max-w-xs mx-auto"
             />
-            
+
             <p className="mt-5 text-2xl font-medium text-gray-600">
               Welcome back
             </p>
@@ -110,7 +110,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-black text-white  py-2.5 rounded-lg"
+              className="w-full bg-black text-white cursor-pointer py-2.5 rounded-lg"
             >
               {isLoading ? "Processing..." : "Continue"}
             </button>
@@ -120,7 +120,7 @@ export default function Login() {
             onClick={handleGoogleLogin}
             className="w-full flex items-center justify-center gap-3 py-2.5 border border-gray-300 rounded-lg"
           >
-            <FcGoogle className="text-xl" />
+            <FcGoogle className="text-xl cursor-pointer" />
             Continue with Google
           </button>
 

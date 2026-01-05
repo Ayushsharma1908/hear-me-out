@@ -116,7 +116,7 @@ export default function SignUp() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-black text-white py-2.5 rounded-lg"
+              className="w-full bg-black text-white py-2.5 rounded-lg cursor-pointer"
             >
               {isLoading ? "Creating account..." : "Create Account"}
             </button>
@@ -126,7 +126,7 @@ export default function SignUp() {
             onClick={handleGoogleSignup}
             className="w-full flex items-center justify-center gap-3 py-2.5 border border-gray-300 rounded-lg"
           >
-            <FcGoogle className="text-xl" />
+            <FcGoogle className="text-xl cursor-pointer" />
             Sign up with Google
           </button>
 
