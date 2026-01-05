@@ -192,7 +192,14 @@ export default function HomePage() {
   return (
     <div className="flex h-screen bg-white">
       {showSidebar && (
+        <div
+        onClick={() => setShowSidebar(false)}
+        className="fixed inset-0 bg-black/30 z-30 md:hidden"
+      />
+    )}
+    
         <Sidebar
+          showSidebar={showSidebar}
           setShowSidebar={setShowSidebar}
           onLogout={handleLogout}
           onNewChat={handleNewChat}
@@ -202,7 +209,6 @@ export default function HomePage() {
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
         />
-      )}
 
       <main className="flex-1 flex flex-col relative overflow-hidden">
         <div
@@ -215,9 +221,9 @@ export default function HomePage() {
               {!showSidebar && (
                 <button
                   onClick={() => setShowSidebar(true)}
-                  className="p-1 rounded-lg hover:bg-gray-10 active:scale-95 md:hidden"
+                  className="p-3 rounded-lg hover:bg-gray-100 active:scale-95 md:hidden"
                 >
-                  <img src={SidebarIcon} alt="Menu" className="w-7 h-7" />
+                  <img src={SidebarIcon} alt="Menu" className="w-8 h-8" />
                 </button>
               )}
               <img src={HearMeOutLogo} alt="Hear Me Out Logo" className="h-8" />

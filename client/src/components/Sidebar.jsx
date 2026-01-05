@@ -4,6 +4,7 @@ import { HiOutlinePencilSquare } from "react-icons/hi2";
 import BotIcon from "../assets/bot-icon.svg";
 
 export default function Sidebar({
+  showSidebar,
   setShowSidebar,
   onLogout,
   onNewChat,
@@ -45,7 +46,7 @@ export default function Sidebar({
     if (!localSearchQuery) {
       setFilteredChats(recentChats);
     } else {
-      const filtered = recentChats.filter(chat => {
+      const filtered = recentChats.filter((chat) => {
         const title = chat.title || chat.messages?.[0]?.text || "New Chat";
         return title.toLowerCase().includes(localSearchQuery.toLowerCase());
       });
@@ -66,7 +67,19 @@ export default function Sidebar({
   }, []);
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+    <aside
+      className={`
+    fixed md:static
+    top-0 left-0
+    h-screen w-64
+    bg-white border-r border-gray-200
+    flex flex-col
+    z-40
+    transform transition-transform duration-300 ease-in-out
+    ${showSidebar ? "translate-x-0" : "-translate-x-full"}
+    md:translate-x-0
+  `}
+    >
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex justify-between items-center">
@@ -125,7 +138,9 @@ export default function Sidebar({
           <div className="space-y-1">
             {filteredChats.length === 0 ? (
               <div className="px-3 py-2 text-gray-500 text-sm">
-                {localSearchQuery ? "No chats found matching your search" : "No recent chats"}
+                {localSearchQuery
+                  ? "No chats found matching your search"
+                  : "No recent chats"}
               </div>
             ) : (
               filteredChats.map((chat) => (
@@ -166,7 +181,11 @@ export default function Sidebar({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (window.confirm("Are you sure you want to delete this chat?")) {
+                          if (
+                            window.confirm(
+                              "Are you sure you want to delete this chat?"
+                            )
+                          ) {
                             onDeleteChat(chat._id);
                           }
                           setOpenMenuId(null);
@@ -195,6 +214,6 @@ export default function Sidebar({
           <span>Logout</span>
         </button>
       </div>
-    </aside>  
+    </aside>
   );
 }
