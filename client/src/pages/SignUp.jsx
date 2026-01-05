@@ -29,14 +29,19 @@ export default function SignUp() {
       const res = await fetch(`${API_BASE_URL}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ name, email, password }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Sign up failed');
 
-      navigate('/home');
+      // ✅ Save JWT to localStorage
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+
+      navigate('/home', { replace: true });
     } catch (err) {
       setError(err.message || 'Sign up failed.');
     } finally {
@@ -45,10 +50,9 @@ export default function SignUp() {
   };
 
   const handleGoogleSignup = () => {
-  window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`;
-};
+    window.location.href = `${API_BASE_URL}/auth/google`;
+  };
 
-  
   return (
     <div className="min-h-screen bg-white flex">
       {/* Left Form */}
@@ -112,7 +116,10 @@ export default function SignUp() {
             </button>
           </form>
 
-          <button onClick={handleGoogleSignup} className="w-full flex items-center justify-center gap-3 py-2.5 border border-gray-300 rounded-lg">
+          <button
+            onClick={handleGoogleSignup}
+            className="w-full flex items-center justify-center gap-3 py-2.5 border border-gray-300 rounded-lg"
+          >
             <FcGoogle className="text-xl" />
             Sign up with Google
           </button>

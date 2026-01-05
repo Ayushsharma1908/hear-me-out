@@ -4,10 +4,9 @@ import Sidebar from "../components/Sidebar";
 import ChatInput from "../components/ChatInput";
 import SidebarIcon from "../assets/sidebar-icon.svg";
 import HearMeOutLogo from "../assets/Hear_meOUT.svg";
-import { API_BASE_URL } from "../config/api.js";
 import ReactMarkdown from "react-markdown";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 
-// ... keep your TypingMarkdown component as is ...
 export default function HomePage() {
   const [showSidebar, setShowSidebar] = useState(true);
   const [query, setQuery] = useState("");
@@ -16,10 +15,10 @@ export default function HomePage() {
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeChatId, setActiveChatId] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(""); // Keep this state
+  const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
-  const navigate = useNavigate();
   const bottomRef = useRef(null);
+  const navigate = useNavigate();
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
@@ -27,48 +26,36 @@ export default function HomePage() {
   }, [messages]);
 
   /* -------------------- AUTH -------------------- */
-useEffect(() => {
-  let isMounted = true;
+  useEffect(() => {
+    let isMounted = true;
 
-  const fetchUser = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/me`, {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error("Not authenticated");
-
-      const data = await res.json();
-      if (isMounted) setUser(data.user);
-    } catch (err) {
-      if (isMounted) {
-        console.log("❌ Not authenticated, redirecting to login");
-        navigate("/login", { replace: true });
+    const fetchUser = async () => {
+      try {
+        const data = await fetchWithAuth("/auth/me");
+        if (isMounted) setUser(data.user);
+      } catch (err) {
+        if (isMounted) {
+          console.log("❌ Not authenticated, redirecting to login");
+          navigate("/login", { replace: true });
+        }
+      } finally {
+        if (isMounted) setAuthLoading(false);
       }
-    } finally {
-      if (isMounted) setAuthLoading(false);
-    }
-  };
+    };
 
-  fetchUser();
+    fetchUser();
 
-  return () => {
-    isMounted = false;
-  };
-}, [navigate]);
-
+    return () => {
+      isMounted = false;
+    };
+  }, [navigate]);
 
   /* -------------------- FETCH RECENT CHATS -------------------- */
   const fetchRecentChats = async (search = "") => {
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/chat/recent?search=${encodeURIComponent(search)}`,
-        {
-          credentials: "include",
-        }
+      const data = await fetchWithAuth(
+        `/api/chat/recent?search=${encodeURIComponent(search)}`
       );
-      const data = await res.json();
       console.log("Recent chats response:", data);
       if (data.chats) setRecentChats(data.chats);
     } catch (err) {
@@ -89,17 +76,11 @@ useEffect(() => {
   /* -------------------- LOAD CHAT -------------------- */
   const loadChat = async (chatId) => {
     console.log("👉 loadChat called with:", chatId);
-
     try {
-      const res = await fetch(`${API_BASE_URL}/api/chat/${chatId}`, {
-        credentials: "include",
-      });
-
-      const data = await res.json();
+      const data = await fetchWithAuth(`/api/chat/${chatId}`);
       console.log("👉 loadChat response:", data);
 
       if (data.chat && data.chat.messages) {
-        console.log("👉 messages received:", data.chat.messages);
         setMessages(data.chat.messages);
         setActiveChatId(chatId);
       }
@@ -118,15 +99,10 @@ useEffect(() => {
   /* -------------------- DELETE CHAT -------------------- */
   const handleDeleteChat = async (chatId) => {
     try {
-      await fetch(`${API_BASE_URL}/api/chat/${chatId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      await fetchWithAuth(`/api/chat/${chatId}`, { method: "DELETE" });
 
-      // Remove from UI
       setRecentChats((prev) => prev.filter((chat) => chat._id !== chatId));
 
-      // Clear screen if deleted chat is open
       if (activeChatId === chatId) {
         setMessages([]);
         setActiveChatId(null);
@@ -136,6 +112,7 @@ useEffect(() => {
     }
   };
 
+  /* -------------------- TYPING ANIMATION -------------------- */
   const typeAssistantMessage = (fullText) => {
     let index = 0;
     let currentText = "";
@@ -153,10 +130,8 @@ useEffect(() => {
         return updated;
       });
 
-      if (index >= fullText.length) {
-        clearInterval(typingInterval);
-      }
-    }, 15); // speed (lower = faster)
+      if (index >= fullText.length) clearInterval(typingInterval);
+    }, 15);
   };
 
   /* -------------------- SEND MESSAGE -------------------- */
@@ -169,52 +144,27 @@ useEffect(() => {
     setQuery("");
 
     try {
-      // 1️⃣ SEND TO AI
-      const res = await fetch(`${API_BASE_URL}/api/chat`, {
+      const data = await fetchWithAuth("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ message: query }),
       });
 
-      const data = await res.json();
-
       const botText = data.response || data.reply;
-
-      // add empty assistant bubble first
       setMessages((prev) => [...prev, { role: "assistant", text: "" }]);
-
-      // type it
       typeAssistantMessage(botText);
 
-      // 2️⃣ SAVE OR UPDATE CHAT
-      const finalMessages = [
-        ...updatedMessages,
-        { role: "assistant", text: botText },
-      ];
+      const finalMessages = [...updatedMessages, { role: "assistant", text: botText }];
 
-      const saveRes = await fetch(`${API_BASE_URL}/api/chat/save`, {
+      const saveData = await fetchWithAuth("/api/chat/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           chatId: activeChatId,
           messages: finalMessages,
         }),
       });
-      if (!saveRes.ok) {
-        console.error("Save failed:", saveData);
-        return;
-      }
 
-      const saveData = await saveRes.json();
+      if (!activeChatId && saveData.chat?._id) setActiveChatId(saveData.chat._id);
 
-      // 3️⃣ STORE CHAT ID IF NEW CHAT
-      if (!activeChatId && saveData.chat && saveData.chat._id) {
-        setActiveChatId(saveData.chat._id);
-      }
-
-      // 4️⃣ REFRESH RECENT CHATS
       fetchRecentChats(searchQuery);
     } catch {
       setMessages((prev) => [
@@ -225,22 +175,19 @@ useEffect(() => {
   };
 
   /* -------------------- LOGOUT -------------------- */
-  const handleLogout = async () => {
-    await fetch(`${API_BASE_URL}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
   if (authLoading) {
-  return (
-    <div className="h-screen flex items-center justify-center text-gray-500">
-      Checking authentication...
-    </div>
-  );
-}
-
+    return (
+      <div className="h-screen flex items-center justify-center text-gray-500">
+        Checking authentication...
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-white">
@@ -253,7 +200,7 @@ useEffect(() => {
           onSelectChat={loadChat}
           onDeleteChat={handleDeleteChat}
           searchQuery={searchQuery}
-          onSearchChange={handleSearchChange} // ADD THIS
+          onSearchChange={handleSearchChange}
         />
       )}
 
@@ -273,7 +220,6 @@ useEffect(() => {
                   <img src={SidebarIcon} alt="Menu" className="w-6 h-6" />
                 </button>
               )}
-              {/* REMOVED search from here - now only logo */}
               <img src={HearMeOutLogo} alt="Hear Me Out Logo" className="h-8" />
             </div>
 
@@ -283,11 +229,7 @@ useEffect(() => {
                 className="focus:outline-none"
               >
                 <img
-                  src={
-                    user?.avatar ||
-                    user?.picture ||
-                    "https://via.placeholder.com/40"
-                  }
+                  src={user?.avatar || user?.picture || "https://via.placeholder.com/40"}
                   alt="Profile"
                   className="w-10 h-10 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-gray-300 transition-all"
                 />
@@ -327,8 +269,6 @@ useEffect(() => {
           ) : (
             <div className="flex-1 overflow-y-auto py-6 px-4 sm:px-8 md:px-16">
               <div className="max-w-2xl mx-auto space-y-2">
-                {console.log("🟢 messages state:", messages)}
-
                 {messages.map((msg, index) => (
                   <div
                     ref={bottomRef}
@@ -349,7 +289,6 @@ useEffect(() => {
                             <hr className="border-gray-300 my-1" />
                           </div>
                         ),
-
                         h2: ({ children }) => (
                           <div className="mb-0">
                             <h2 className="text-sm font-medium leading-tight">
@@ -358,35 +297,23 @@ useEffect(() => {
                             <hr className="border-gray-200 my-0.5" />
                           </div>
                         ),
-
                         h3: ({ children }) => (
                           <h3 className="text-sm font-medium leading-tight mb-0">
                             {children}
                           </h3>
                         ),
-
                         p: ({ children }) => (
-                          <p className="text-sm leading-snug mb-0.5">
-                            {children}
-                          </p>
+                          <p className="text-sm leading-snug mb-0.5">{children}</p>
                         ),
-
                         ul: ({ children }) => (
-                          <ul className="list-disc ml-4 mb-0.5 mt-0 space-y-0">
-                            {children}
-                          </ul>
+                          <ul className="list-disc ml-4 mb-0.5 mt-0 space-y-0">{children}</ul>
                         ),
-
                         li: ({ children }) => (
                           <li className="text-sm leading-snug">{children}</li>
                         ),
-
                         code: ({ children }) => (
-                          <code className="bg-gray-200 text-xs px-1 rounded">
-                            {children}
-                          </code>
+                          <code className="bg-gray-200 text-xs px-1 rounded">{children}</code>
                         ),
-
                         blockquote: ({ children }) => (
                           <blockquote className="border-l-2 border-gray-300 pl-3 text-sm italic my-0.5">
                             {children}
@@ -406,11 +333,7 @@ useEffect(() => {
         {/* Chat Input without top border */}
         <div className="sticky bottom-0 bg-white py-4 px-4 sm:px-8 md:px-16">
           <div className="max-w-2xl mx-auto">
-            <ChatInput
-              query={query}
-              setQuery={setQuery}
-              handleSubmit={handleSubmit}
-            />
+            <ChatInput query={query} setQuery={setQuery} handleSubmit={handleSubmit} />
           </div>
         </div>
       </main>

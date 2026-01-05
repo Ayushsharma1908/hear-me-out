@@ -1,13 +1,25 @@
 import express from "express";
-import passport from "../passport.js";
-import User from "../models/User.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 const router = express.Router();
 
-// Helper function to generate default avatar URL based on name
+// ------------------------
+// Helper: Generate JWT
+// ------------------------
+const generateToken = (user) => {
+  return jwt.sign(
+    { id: user._id, email: user.email }, // payload
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" } // token valid for 7 days
+  );
+};
+
+// ------------------------
+// Helper: Default Avatar
+// ------------------------
 const generateDefaultAvatar = (name) => {
-  // Get initials from name
   const initials = name
     .split(" ")
     .map((n) => n[0])
@@ -15,34 +27,14 @@ const generateDefaultAvatar = (name) => {
     .toUpperCase()
     .slice(0, 2);
 
-  // Use UI Avatars service to generate avatar
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(
     initials
   )}&background=000000&color=ffffff&size=128&bold=true`;
 };
 
-const FRONTEND_URL = process.env.FRONTEND_URL;
-
-// Redirect user to Google for login
-router.get(
-  "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
-// Google callback
-router.get(
-  "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/auth/failed" }),
-  (req, res) => {
-    console.log("Session cookie:", req.session);
-    console.log("User:", req.user);
-    res.redirect(`${FRONTEND_URL}/home`);
-  }
-);
-
-
-
-// Signup with email/password
+// ------------------------
+// Signup Route
+// ------------------------
 router.post("/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -54,95 +46,71 @@ router.post("/signup", async (req, res) => {
     if (password.length < 6) {
       return res
         .status(400)
-        .json({ message: "Password must be at least 6 characters long" });
+        .json({ message: "Password must be at least 6 characters" });
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "User with this email already exists" });
+      return res.status(400).json({ message: "Email already in use" });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+    const avatar = generateDefaultAvatar(name);
 
-    // Generate default avatar for email/password users
-    const defaultAvatar = generateDefaultAvatar(name);
-
-    // Create user
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
-      avatar: defaultAvatar, // Set default avatar
+      avatar,
     });
 
-    // Remove password from response
-    const userObj = user.toObject();
-    delete userObj.password;
+    const token = generateToken(user);
 
-    // Log user in (create session)
-    req.login(user, (err) => {
-      if (err) {
-        return res.status(500).json({ message: "Error creating session" });
-      }
-      res
-        .status(201)
-        .json({ user: userObj, message: "User created successfully" });
+    res.status(201).json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+      },
+      token,
+      message: "Signup successful",
     });
   } catch (err) {
     console.error("Signup error:", err);
-    if (err.code === 11000) {
-      return res
-        .status(400)
-        .json({ message: "User with this email already exists" });
-    }
     res.status(500).json({ message: "Server error during signup" });
   }
 });
 
-// Login with email/password
+// ------------------------
+// Login Route
+// ------------------------
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
-    }
+    if (!email || !password)
+      return res.status(400).json({ message: "Email and password required" });
 
-    // Find user
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user)
       return res.status(401).json({ message: "Invalid email or password" });
-    }
 
-    // Check if user has a password (might be Google OAuth only user)
-    if (!user.password) {
-      return res
-        .status(401)
-        .json({ message: "Please sign in with Google for this account" });
-    }
-
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid)
       return res.status(401).json({ message: "Invalid email or password" });
-    }
 
-    // Remove password from user object
-    const userObj = user.toObject();
-    delete userObj.password;
+    const token = generateToken(user);
 
-    // Log user in (create session)
-    req.login(user, (err) => {
-      if (err) {
-        return res.status(500).json({ message: "Error creating session" });
-      }
-      res.json({ user: userObj, message: "Login successful" });
+    res.json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+      },
+      token,
+      message: "Login successful",
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -150,32 +118,20 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Get current user
-router.get("/me", (req, res) => {
-  if (req.user) {
-    const userObj = req.user.toObject ? req.user.toObject() : req.user;
-    delete userObj.password;
-    res.json({ user: userObj });
-  } else {
-    res.status(401).json({ error: "Not authenticated" });
-  }
-});
+// ------------------------
+// Get current user (from JWT)
+// ------------------------
+import authMiddleware from "../middleware/auth.js"; // your JWT middleware
 
-// Logout
-router.post("/logout", (req, res) => {
-  req.logout(() => {
-    req.session.destroy(() => {
-      res.clearCookie("connect.sid", {
-        sameSite: "none",
-        secure: true,
-        path: "/",
-      });
-      res.json({ message: "Logged out successfully" });
-    });
+router.get("/me", authMiddleware, (req, res) => {
+  res.json({
+    user: {
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      avatar: req.user.avatar,
+    },
   });
 });
-
-
-
 
 export default router;

@@ -4,9 +4,6 @@ dotenv.config();
 import app from "./app.js";
 import mongoose from "mongoose";
 
-// Log first 6 chars of GROQ key for debugging
-console.log("GROQ KEY:", process.env.GROQ_API_KEY?.slice(0, 6));
-
 const PORT = process.env.PORT || 5000;
 
 mongoose

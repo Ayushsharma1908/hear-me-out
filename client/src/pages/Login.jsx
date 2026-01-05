@@ -12,39 +12,41 @@ export default function Login() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsLoading(true);
-  setError('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }), // ✅ no credentials
+      });
 
-    const data = await res.json();
-    console.log('🔑 Login response:', data);
+      const data = await res.json();
+      console.log('🔑 Login response:', data);
 
-    if (!res.ok) {
-      throw new Error(data.message || 'Login failed');
+      if (!res.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // ✅ Save JWT for future requests
+      localStorage.setItem('token', data.token); // store JWT
+      localStorage.setItem('user', JSON.stringify(data.user)); // optional user info
+
+      // ✅ LOGIN SUCCESS → GO TO HOME
+      navigate('/home', { replace: true });
+
+    } catch (err) {
+      setError(err.message || 'Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-
-    // ✅ LOGIN SUCCESS → JUST GO TO HOME
-    navigate('/home', { replace: true });
-
-  } catch (err) {
-    setError(err.message || 'Login failed. Please try again.');
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+  };
 
   const handleGoogleLogin = () => {
-    window.location.href = "https://hear-me-out-oa3q.onrender.com/auth/google";
+    window.location.href = `${API_BASE_URL}/auth/google`;
   };
 
 
