@@ -33,7 +33,9 @@ router.get(
     const user = req.user.user;
 
     // Frontend redirect with JWT
-    res.redirect(`${process.env.FRONTEND_URL}/home?token=${token}`);
+res.redirect(
+  `${process.env.FRONTEND_URL}/oauth-success?token=${token}`
+);
   }
 );
 // ------------------------
