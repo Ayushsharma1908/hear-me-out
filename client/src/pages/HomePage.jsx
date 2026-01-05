@@ -34,8 +34,8 @@ export default function HomePage() {
         const data = await fetchWithAuth("/auth/me");
         if (isMounted) setUser(data.user);
       } catch (err) {
+         console.error("Auth error:", err);
         if (isMounted) {
-          console.log("❌ Not authenticated, redirecting to login");
           navigate("/login", { replace: true });
         }
       } finally {
