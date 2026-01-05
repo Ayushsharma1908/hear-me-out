@@ -197,7 +197,7 @@ export default function HomePage() {
         className="fixed inset-0 bg-black/30 z-30 md:hidden"
       />
     )}
-    
+
         <Sidebar
           showSidebar={showSidebar}
           setShowSidebar={setShowSidebar}
@@ -216,20 +216,20 @@ export default function HomePage() {
             showSidebar ? "px-4 sm:px-8 md:px-16" : "px-2 sm:px-4 md:px-6"
           }`}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2 min-w-0">
               {!showSidebar && (
                 <button
                   onClick={() => setShowSidebar(true)}
-                  className="p-3 rounded-lg hover:bg-gray-100 active:scale-95 md:hidden"
+                  className="p-2 rounded-lg hover:bg-gray-100 active:scale-95 shrink-0 md:hidden"
                 >
-                  <img src={SidebarIcon} alt="Menu" className="w-8 h-8" />
+                  <img src={SidebarIcon} alt="Menu" className="w-7 h-7" />
                 </button>
               )}
-              <img src={HearMeOutLogo} alt="Hear Me Out Logo" className="h-8" />
+              <img src={HearMeOutLogo} alt="Hear Me Out Logo" className="h-6 sm:h-7 md:h-8 shrink-0" />
             </div>
 
-            <div className="relative" ref={dropdownRef}>
+            <div className="shrink-0" ref={dropdownRef}>
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="focus:outline-none"
