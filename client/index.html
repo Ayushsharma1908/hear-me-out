@@ -6,9 +6,16 @@
     <title>Hear Me Out</title>
   </head>
   <body>
-    <div id="root"></div> 
-    <script type="module" src="/src/main.jsx">window.OAuthSuccess = function (response) {
-    console.log("Google login success", response);
-  };</script>
+    <div id="root"></div>
+
+    <!-- Google Identity Script -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- OAuth Success Handler -->
+    <script>
+      window.OAuthSuccess = function (response) {
+        console.log("Google login success:", response);
+      };
+    </script>
   </body>
 </html>
