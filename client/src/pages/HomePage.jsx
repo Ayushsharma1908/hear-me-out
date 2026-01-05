@@ -204,7 +204,7 @@ export default function HomePage() {
         />
       )}
 
-      <main className="flex-1 flex flex-col relative">
+      <main className="flex-1 flex flex-col relative overflow-hidden">
         <div
           className={`sticky top-0 z-10 bg-white border-b border-gray-200 py-4 ${
             showSidebar ? "px-4 sm:px-8 md:px-16" : "px-2 sm:px-4 md:px-6"
@@ -215,9 +215,9 @@ export default function HomePage() {
               {!showSidebar && (
                 <button
                   onClick={() => setShowSidebar(true)}
-                  className="p-1 rounded-lg hover:bg-gray-100"
+                  className="p-1 rounded-lg hover:bg-gray-10 active:scale-95 md:hidden"
                 >
-                  <img src={SidebarIcon} alt="Menu" className="w-6 h-6" />
+                  <img src={SidebarIcon} alt="Menu" className="w-7 h-7" />
                 </button>
               )}
               <img src={HearMeOutLogo} alt="Hear Me Out Logo" className="h-8" />
@@ -321,7 +321,7 @@ export default function HomePage() {
                         ),
                       }}
                     >
-                      {msg.text}
+                      {msg.text  || ""}
                     </ReactMarkdown>
                   </div>
                 ))}

@@ -76,7 +76,7 @@ export default function Sidebar({
           </div>
           <button
             onClick={() => setShowSidebar(false)}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
+            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900 md:hidden"
           >
             ✕
           </button>
