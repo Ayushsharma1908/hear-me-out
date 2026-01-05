@@ -13,7 +13,7 @@ export default function SplashScreen({ onFinish }) {
     // End splash after 1.8s
     const endTimer = setTimeout(() => {
       onFinish();
-    }, 1800);
+    }, 2500);
 
     return () => {
       clearTimeout(fadeTimer);
@@ -36,7 +36,7 @@ export default function SplashScreen({ onFinish }) {
         alt="Bot Icon"
         className="
           w-20 h-20
-          animate-splash
+          invert
         "
       />
     </div>
