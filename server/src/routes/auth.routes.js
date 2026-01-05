@@ -2,6 +2,8 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import passport from "../passport.js";
+
 
 const router = express.Router();
 
@@ -16,6 +18,24 @@ const generateToken = (user) => {
   );
 };
 
+// Google OAuth
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { session: false, failureRedirect: "/login" }),
+  (req, res) => {
+    // OAuth success → redirect with token
+    const token = req.user.token;
+    const user = req.user.user;
+
+    // Frontend redirect with JWT
+    res.redirect(`${process.env.FRONTEND_URL}/home?token=${token}`);
+  }
+);
 // ------------------------
 // Helper: Default Avatar
 // ------------------------

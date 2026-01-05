@@ -3,6 +3,9 @@ import cors from "cors";
 import mongoose from "mongoose";
 import chatRoutes from "./routes/chat.routes.js";
 import authRoutes from "./routes/auth.routes.js";
+import passport from "passport";
+import "./passport.js"; // <-- make sure your strategies are loaded
+
 
 const app = express();
 app.use(express.json());
