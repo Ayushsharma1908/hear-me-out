@@ -20,32 +20,42 @@ export default function HomePage() {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const bottomRef = useRef(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   /* -------------------- AUTH -------------------- */
- useEffect(() => {
+useEffect(() => {
+  let isMounted = true;
+
   const fetchUser = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/auth/me`, {
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
       });
 
-      if (!res.ok) {
-        throw new Error("Not authenticated");
-      }
+      if (!res.ok) throw new Error("Not authenticated");
 
       const data = await res.json();
-      setUser(data.user);
+      if (isMounted) setUser(data.user);
     } catch (err) {
-      console.log("Auth failed, redirecting...");
-      navigate('/login', { replace: true });
+      if (isMounted) {
+        console.log("❌ Not authenticated, redirecting to login");
+        navigate("/login", { replace: true });
+      }
+    } finally {
+      if (isMounted) setAuthLoading(false);
     }
   };
 
   fetchUser();
+
+  return () => {
+    isMounted = false;
+  };
 }, [navigate]);
 
 
@@ -222,6 +232,15 @@ export default function HomePage() {
     });
     navigate("/login");
   };
+
+  if (authLoading) {
+  return (
+    <div className="h-screen flex items-center justify-center text-gray-500">
+      Checking authentication...
+    </div>
+  );
+}
+
 
   return (
     <div className="flex h-screen bg-white">
