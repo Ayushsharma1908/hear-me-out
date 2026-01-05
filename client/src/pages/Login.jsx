@@ -1,45 +1,45 @@
-import { useState } from 'react';
-import { FcGoogle } from 'react-icons/fc';
-import { Link, useNavigate } from 'react-router-dom';
-import HearMeOutLogo from '../assets/Hear_meOUT.svg';
-import NerdIllustration from '../assets/nerd-illustration.svg';
-import { API_BASE_URL } from '../config/api';
+import { useState } from "react";
+import { FcGoogle } from "react-icons/fc";
+import { Link, useNavigate } from "react-router-dom";
+import HearMeOutLogo from "../assets/Hear_meOUT.svg";
+import NerdIllustration from "../assets/nerd-illustration.svg";
+import { API_BASE_URL } from "../config/api";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
       const res = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }), // ✅ no credentials
       });
 
       const data = await res.json();
-      console.log('🔑 Login response:', data);
+      console.log("🔑 Login response:", data);
 
       if (!res.ok) {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(data.message || "Login failed");
       }
 
       // ✅ Save JWT for future requests
-      localStorage.setItem('token', data.token); // store JWT
-      localStorage.setItem('user', JSON.stringify(data.user)); // optional user info
+      localStorage.setItem("token", data.token); // store JWT
+      localStorage.setItem("user", JSON.stringify(data.user)); // optional user info
 
       // ✅ LOGIN SUCCESS → GO TO HOME
-      navigate('/home', { replace: true });
-
+      navigate("/home", { replace: true });
     } catch (err) {
-      setError(err.message || 'Login failed. Please try again.');
+      setError(err.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +48,6 @@ export default function Login() {
   const handleGoogleLogin = () => {
     window.location.href = `${API_BASE_URL}/auth/google`;
   };
-
 
   return (
     <div className="min-h-screen bg-white flex">
@@ -62,10 +61,22 @@ export default function Login() {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center pl-2 pr-18 py-4">
-        <div className="w-full max-w-md space-y-6">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:pl-2 lg:pr-18 py-8">
+        <div className="w-full max-w-md space-y-6 text-center">
           <div className="text-center">
-            <img src={HearMeOutLogo} alt="Hear Me Out" className="h-10 mx-auto" />
+            <img
+              src={HearMeOutLogo}
+              alt="Hear Me Out"
+              className="h-8 sm:h-9 mx-auto"
+            />
+
+            {/* ILLUSTRATION (MOBILE + TABLET ONLY) */}
+            <img
+              src={NerdIllustration}
+              alt="Nerd Illustration"
+              className="lg:hidden w-full max-w-xs mx-auto"
+            />
+            
             <p className="mt-5 text-2xl font-medium text-gray-600">
               Welcome back
             </p>
@@ -101,7 +112,7 @@ export default function Login() {
               disabled={isLoading}
               className="w-full bg-black text-white  py-2.5 rounded-lg"
             >
-              {isLoading ? 'Processing...' : 'Continue'}
+              {isLoading ? "Processing..." : "Continue"}
             </button>
           </form>
 
@@ -114,7 +125,7 @@ export default function Login() {
           </button>
 
           <p className="text-center text-sm text-gray-600">
-            Don&apos;t have an account?{' '}
+            Don&apos;t have an account?{" "}
             <Link to="/signup" className="font-medium text-black">
               Sign Up for free
             </Link>

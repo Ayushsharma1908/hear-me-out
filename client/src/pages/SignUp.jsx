@@ -1,49 +1,49 @@
-import { useState } from 'react';
-import { FcGoogle } from 'react-icons/fc';
-import { Link, useNavigate } from 'react-router-dom';
-import HearMeOutLogo from '../assets/Hear_meOUT.svg';
-import BannerIllustration from '../assets/banner.svg';
-import { API_BASE_URL } from '../config/api';
+import { useState } from "react";
+import { FcGoogle } from "react-icons/fc";
+import { Link, useNavigate } from "react-router-dom";
+import HearMeOutLogo from "../assets/Hear_meOUT.svg";
+import BannerIllustration from "../assets/banner.svg";
+import { API_BASE_URL } from "../config/api";
 
 export default function SignUp() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
 
     try {
       const res = await fetch(`${API_BASE_URL}/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Sign up failed');
+      if (!res.ok) throw new Error(data.message || "Sign up failed");
 
       // ✅ Save JWT to localStorage
       if (data.token) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
       }
 
-      navigate('/home', { replace: true });
+      navigate("/home", { replace: true });
     } catch (err) {
-      setError(err.message || 'Sign up failed.');
+      setError(err.message || "Sign up failed.");
     } finally {
       setIsLoading(false);
     }
@@ -54,21 +54,27 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex">
+    <div className="min-h-screen bg-white flex flex-col lg:flex-row">
       {/* Left Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center pl-8 pr-2 py-4">
-        <div className="w-full max-w-md space-y-6">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:pl-8 lg:pr-2 py-8">
+        <div className="w-full max-w-md space-y-6 text-center">
           <div className="text-center">
-            <img src={HearMeOutLogo} className="h-10 mx-auto" />
+            <img src={HearMeOutLogo} className="h-8 sm:h-9 mx-auto" />
+
+            {/* ILLUSTRATION (MOBILE + TABLET ONLY) */}
+            <img
+              src={BannerIllustration}
+              alt="Signup Illustration"
+              className="lg:hidden toggle w-full max-w-xs mx-auto"
+            />
+
             <p className="mt-5 text-2xl font-medium text-gray-600">
               Create your account
             </p>
           </div>
 
           {error && (
-            <div className="p-3 bg-red-50 text-red-600 rounded-lg">
-              {error}
-            </div>
+            <div className="p-3 bg-red-50 text-red-600 rounded-lg">{error}</div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -112,7 +118,7 @@ export default function SignUp() {
               disabled={isLoading}
               className="w-full bg-black text-white py-2.5 rounded-lg"
             >
-              {isLoading ? 'Creating account...' : 'Create Account'}
+              {isLoading ? "Creating account..." : "Create Account"}
             </button>
           </form>
 
@@ -125,7 +131,7 @@ export default function SignUp() {
           </button>
 
           <p className="text-center text-sm text-gray-600">
-            Already have an account?{' '}
+            Already have an account?{" "}
             <Link to="/login" className="font-medium text-black">
               Sign In
             </Link>
