@@ -1,7 +1,7 @@
 # Hear Me Out 🤖💬
 
 Hear Me Out is a full-stack AI-powered chat application that allows users to have meaningful, real-time conversations with an AI assistant.
-It features JWT-based authentication, Google OAuth, chat history persistence, and a modern ChatGPT-style UI with full mobile responsiveness.
+It features JWT-based authentication, Google OAuth, chat history persistence, and a modern ChatGPT-style UI with full mobile and desktop responsiveness.
 
 ---
 
